@@ -1,0 +1,44 @@
+
+I commenced the examination by delving into best practices for securing Prometheus. This involved perusing articles such as https://jfrog.com/dont-let-prometheus-steal-your-fire/ and https://danuka-praneeth.medium.com/setting-up-a-comprehensive-monitoring-system-with-prometheus-6b2b73cf54d2. Subsequently, I conducted a meticulous analysis of the views.py file to identify any potential exposure of sensitive metrics. An evident vulnerability was associated with 'graphs[pword].inc()', which logged secret usage during a POST request. While I had initially observed this in part 1 and commented out a portion of it, I have now fully remedied the issue by commenting out everything from "if pword..." to "graphs[pword].inc()".
+
+In Part 3.2, my decision was to broaden the scope of monitoring by including the recording of 404 errors. As a result, I introduced the 'error_return_counter' graph, specifically created to monitor instances of 404 errors occurring on return statements.
+
+
+Subsequently, I conducted a search for '404 Not found' within the views.py file to identify occurrences where an error is returned. I discovered a total of 4 such instances. Consequently, I incorporated the statement 'graphs['error_return_counter'].inc()' into each instance of error return. This modification ensures that the counter is incremented with each error recorded in the database.
+I initiated the process by acquiring Helm through the instructions provided on its official website https://helm.sh/docs/intro/install/.
+
+
+Following the installation of Helm using the recently acquired Helm repo, I proceeded to install Prometheus from its dedicated repository, as referenced here.Adhering to the guidelines outlined in the tutorial https://artifacthub.io/packages/helm/prometheus-community/prometheus, I executed the commands kubectl get services and kubectl get pods to verify that Prometheus was running as expected.
+
+
+Adhering to the guidelines outlined in the tutorial https://artifacthub.io/packages/helm/prometheus-community/prometheus, I executed the commands kubectl get services and kubectl get pods to verify that Prometheus was running as expected.
+
+Next, I ran ‘minikube service --all’ to locate all services running and isolate the prometheus
+server
+
+From there, I ran ‘kubectl expose service prometheus-1669583381-server --type=NodePort
+--target-port=9090 --name=prometheus-server-np’ to expose the appropriate prometheus server
+to its respective port
+Additionally, I was able to confirm that it was running by visiting its respective webpage for
+prometheus server which is running
+(http://192.168.49.2:32460/graph?g0.expr=&g0.tab=1&g0.stacked=0&g0.show_exemplars=0&g
+0.range_input=1h
+
+Next, I had to adjust the configmap so the prometheus server would be to pull metrics from our
+website. I did this by first running ‘kubectl get configmap’ to get the list of configmaps avaliable
+
+
+
+Finally, I created a duplicate of the updated YAML file by executing the command:
+
+Subsequent to this modification, I restarted the pods by deleting each one using the command kubectl delete pod <pod_name>. Upon completion, I confirmed their proper functioning by checking their status with the command kubectl get pods.
+
+Furthermore, I accessed the /etc directory in the server individually by executing the command:
+kubectl exec -it prometheus-1669583381-server-88d7b9746-5znw8 /bin/sh
+his allowed me to verify that the YAML file was updated as intended. Finally, I validated that the server was directed to a port by running:
+minikube service list prometheus
+As a self-verification measure, I visited the website and confirmed the presence of monitoring for the gift card site.
+Moreover, I conducted a check to ensure that the 'pword' filter counter did not exist, and I confirmed its absence. This verification indicates that the views.py file accurately reflects the intended configuration.
+
+
+
